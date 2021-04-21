@@ -10,22 +10,23 @@ namespace Scenes
     {
         private const int Port = 8888;
         private const string IP = "127.0.0.1";
-        
+
+        public ReadOnlyReactiveProperty<bool> IsConnectedToServer => isConnectedToServer.ToReadOnlyReactiveProperty();
+
+        private readonly BoolReactiveProperty isConnectedToServer;
         private TcpClient client;
         private NetworkStream dataStream;
-        
-        public BoolReactiveProperty IsConnectedToServer { get; private set; }
 
         public NetworkClient()
         {
-            IsConnectedToServer = new BoolReactiveProperty(false);
+            isConnectedToServer = new BoolReactiveProperty(false);
         }
 
         public async void ConnectToServerAsync()
         {
             client = new TcpClient();
             await client.ConnectAsync(IP, Port);
-            IsConnectedToServer.Value = true;
+            isConnectedToServer.Value = true;
             dataStream = client.GetStream();
         }
 
@@ -37,6 +38,7 @@ namespace Scenes
 
         public void Dispose()
         {
+            client?.Close();
             client?.Dispose();
             dataStream?.Dispose();
             IsConnectedToServer?.Dispose();
