@@ -53,7 +53,11 @@ namespace Scenes
                         ShowError(err);
                         connectToServerButton.interactable = true;
                     },
-                    () => connectToServerButton.interactable = true);
+                    () =>
+                    {
+                        UpdateView();
+                        connectToServerButton.interactable = true;
+                    });
         }
 
         private void SendMessageAsync(NetworkMessage message)
