@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Threading;
+using Replication;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Scenes
+namespace Scripts
 {
     public class ControlPanelPresenter : MonoBehaviour
     {
+        [Header("Settings")] 
+        [SerializeField] private ConnectionConfig connectionConfig;
+        
+        [Header("Components")]
         [SerializeField] private Button connectToServerButton;
         [SerializeField] private Button turnLightOnButton;
         [SerializeField] private Button turnLightOffButton;
@@ -17,7 +22,7 @@ namespace Scenes
 
         private void Start()
         {
-            networkClient = new NetworkClient();
+            networkClient = new NetworkClient(connectionConfig);
             
             connectToServerButton.OnClickAsObservable().Subscribe(_ => ConnectToServerAsync());
             turnLightOnButton.OnClickAsObservable().Subscribe(_ => SendMessageAsync(NetworkMessage.TurnLightOn));

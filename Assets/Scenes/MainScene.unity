@@ -1214,6 +1214,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f562a1cf75be349bda6689a0b2896f58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  connectionConfig: {fileID: 11400000, guid: 1d113e8bb945244aebf8d3dd29677fb1, type: 2}
   connectToServerButton: {fileID: 22845557}
   turnLightOnButton: {fileID: 337877861}
   turnLightOffButton: {fileID: 724225357}
