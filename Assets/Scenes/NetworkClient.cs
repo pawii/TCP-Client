@@ -10,29 +10,28 @@ namespace Scenes
     {
         private const int Port = 8888;
         private const string IP = "127.0.0.1";
+        private static readonly Encoding ConnectionEncoding = Encoding.UTF8;
 
-        public ReadOnlyReactiveProperty<bool> IsConnectedToServer => isConnectedToServer.ToReadOnlyReactiveProperty();
-
-        private readonly BoolReactiveProperty isConnectedToServer;
         private TcpClient client;
         private NetworkStream dataStream;
 
+        public bool IsConnected => client.Connected;
+
         public NetworkClient()
         {
-            isConnectedToServer = new BoolReactiveProperty(false);
+            client = new TcpClient();
         }
 
-        public async void ConnectToServerAsync()
+        public void ConnectToServer()
         {
             client = new TcpClient();
-            await client.ConnectAsync(IP, Port);
-            isConnectedToServer.Value = true;
+            client.Connect(IP, Port);
             dataStream = client.GetStream();
         }
 
         public void SendMessage(NetworkMessage message)
         {
-            byte[] data = Encoding.UTF8.GetBytes(JsonUtility.ToJson(message)); // использовать .NET JSON?
+            byte[] data = ConnectionEncoding.GetBytes(JsonUtility.ToJson(message)); // использовать .NET JSON?
             dataStream.Write(data, 0, data.Length);
         }
 
@@ -41,7 +40,6 @@ namespace Scenes
             client?.Close();
             client?.Dispose();
             dataStream?.Dispose();
-            IsConnectedToServer?.Dispose();
         }
     }
 }

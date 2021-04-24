@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Net.Sockets;
-using System.Text;
+using System.Threading;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +8,7 @@ namespace Scenes
 {
     public class ControlPanelPresenter : MonoBehaviour
     {
-        [SerializeField] private GameObject connectingToServerWidget;
+        [SerializeField] private Button connectToServerButton;
         [SerializeField] private Button turnLightOnButton;
         [SerializeField] private Button turnLightOffButton;
         [SerializeField] private Button makeExplosionButton;
@@ -20,21 +19,60 @@ namespace Scenes
         {
             networkClient = new NetworkClient();
             
-            turnLightOnButton.OnClickAsObservable().Subscribe(_ => networkClient.SendMessage(NetworkMessage.TurnLightOn));
-            turnLightOffButton.OnClickAsObservable().Subscribe(_ => networkClient.SendMessage(NetworkMessage.TurnLightOff));
-            makeExplosionButton.OnClickAsObservable().Subscribe(_ => networkClient.SendMessage(NetworkMessage.MakeExplosion));
-            
-            networkClient.IsConnectedToServer.Subscribe(SetupView);
-            
-            SetupView(false);
-            networkClient.ConnectToServerAsync();
+            connectToServerButton.OnClickAsObservable().Subscribe(_ => ConnectToServerAsync());
+            turnLightOnButton.OnClickAsObservable().Subscribe(_ => SendMessageAsync(NetworkMessage.TurnLightOn));
+            turnLightOffButton.OnClickAsObservable().Subscribe(_ => SendMessageAsync(NetworkMessage.TurnLightOff));
+            makeExplosionButton.OnClickAsObservable().Subscribe(_ => SendMessageAsync(NetworkMessage.MakeExplosion));
+
+            UpdateView();
         }
 
-        private void SetupView(bool isConnectedToServer)
+        private void UpdateView()
         {
-            connectingToServerWidget.gameObject.SetActive(!isConnectedToServer);
-            turnLightOnButton.interactable = turnLightOffButton.interactable =
-                makeExplosionButton.interactable = isConnectedToServer;
+            connectToServerButton.gameObject.SetActive(!networkClient.IsConnected);
+            connectToServerButton.interactable = !networkClient.IsConnected;
+            turnLightOnButton.interactable = networkClient.IsConnected;
+            turnLightOffButton.interactable = networkClient.IsConnected;
+            makeExplosionButton.interactable = networkClient.IsConnected;
+        }
+
+        private void ConnectToServerAsync()
+        {
+            connectToServerButton.interactable = false;
+            Observable
+                .Start(() =>
+                {
+                    networkClient.ConnectToServer();
+                })
+                .ObserveOnMainThread()
+                .Subscribe(
+                    _ => { },
+                    err =>
+                    {
+                        UpdateView();
+                        ShowError(err);
+                        connectToServerButton.interactable = true;
+                    },
+                    () => connectToServerButton.interactable = true);
+        }
+
+        private void SendMessageAsync(NetworkMessage message)
+        {
+            Observable
+                .Start(() => networkClient.SendMessage(message))
+                .ObserveOnMainThread()
+                .Subscribe(
+                    _ => {},
+                    err =>
+                    {
+                        UpdateView();
+                        ShowError(err);
+                    });
+        }
+
+        private void ShowError(Exception ex)
+        {
+            Debug.LogError(ex.Message);
         }
 
         private void OnDestroy()
