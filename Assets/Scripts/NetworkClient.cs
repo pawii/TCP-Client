@@ -10,6 +10,7 @@ namespace Scripts
     {
         private readonly ConnectionConfig connectionConfig;
         private TcpClient client;
+        private NetworkStream dataStream;
 
         public bool IsConnected => client.Connected;
 
@@ -23,19 +24,19 @@ namespace Scripts
         {
             client = new TcpClient();
             client.Connect(connectionConfig.IP, connectionConfig.Port);
+            dataStream = client.GetStream();
         }
 
         public void SendMessage(NetworkMessage message)
         {
-            using (var dataStream = client.GetStream())
-            {
-                byte[] data = connectionConfig.Encoding.GetBytes(JsonUtility.ToJson(message)); // использовать .NET JSON?
-                dataStream.Write(data, 0, data.Length);
-            }
+            byte[] data = connectionConfig.Encoding.GetBytes(JsonUtility.ToJson(message)); // использовать .NET JSON?
+            dataStream.Write(data, 0, data.Length);
         }
 
         public void Dispose()
         {
+            dataStream?.Close();
+            dataStream?.Dispose();
             client?.Close();
             client?.Dispose();
         }
