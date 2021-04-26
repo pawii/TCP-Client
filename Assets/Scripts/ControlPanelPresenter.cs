@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using Replication;
 using UniRx;
 using UnityEngine;
@@ -18,11 +17,11 @@ namespace Scripts
         [SerializeField] private Button turnLightOffButton;
         [SerializeField] private Button makeExplosionButton;
 
-        private NetworkClient networkClient;
+        private CustomTcpClient customTcpClient;
 
         private void Start()
         {
-            networkClient = new NetworkClient(connectionConfig);
+            customTcpClient = new CustomTcpClient(connectionConfig);
             
             connectToServerButton.OnClickAsObservable().Subscribe(_ => ConnectToServerAsync());
             turnLightOnButton.OnClickAsObservable().Subscribe(_ => SendMessageAsync(NetworkMessage.TurnLightOn));
@@ -34,11 +33,11 @@ namespace Scripts
 
         private void UpdateView()
         {
-            connectToServerButton.gameObject.SetActive(!networkClient.IsConnected);
-            connectToServerButton.interactable = !networkClient.IsConnected;
-            turnLightOnButton.interactable = networkClient.IsConnected;
-            turnLightOffButton.interactable = networkClient.IsConnected;
-            makeExplosionButton.interactable = networkClient.IsConnected;
+            connectToServerButton.gameObject.SetActive(!customTcpClient.IsConnected);
+            connectToServerButton.interactable = !customTcpClient.IsConnected;
+            turnLightOnButton.interactable = customTcpClient.IsConnected;
+            turnLightOffButton.interactable = customTcpClient.IsConnected;
+            makeExplosionButton.interactable = customTcpClient.IsConnected;
         }
 
         private void ConnectToServerAsync()
@@ -47,7 +46,7 @@ namespace Scripts
             Observable
                 .Start(() =>
                 {
-                    networkClient.ConnectToServer();
+                    customTcpClient.ConnectToServer();
                 })
                 .ObserveOnMainThread()
                 .Subscribe(
@@ -68,7 +67,7 @@ namespace Scripts
         private void SendMessageAsync(NetworkMessage message)
         {
             Observable
-                .Start(() => networkClient.SendMessage(message))
+                .Start(() => customTcpClient.SendMessage(message))
                 .ObserveOnMainThread()
                 .Subscribe(
                     _ => {},
@@ -86,7 +85,7 @@ namespace Scripts
 
         private void OnDestroy()
         {
-            networkClient.Dispose();
+            customTcpClient.Dispose();
         }
     }
 }

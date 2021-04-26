@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Text;
 using Replication;
 using UnityEngine;
 
 namespace Scripts
 {
-    public class NetworkClient : IDisposable
+    public class CustomTcpClient : IDisposable
     {
         private readonly ConnectionConfig connectionConfig;
         private TcpClient client;
@@ -14,7 +13,7 @@ namespace Scripts
 
         public bool IsConnected => client.Connected;
 
-        public NetworkClient(ConnectionConfig connectionConfig)
+        public CustomTcpClient(ConnectionConfig connectionConfig)
         {
             this.connectionConfig = connectionConfig;
             client = new TcpClient();
@@ -29,7 +28,7 @@ namespace Scripts
 
         public void SendMessage(NetworkMessage message)
         {
-            byte[] data = connectionConfig.Encoding.GetBytes(JsonUtility.ToJson(message)); // использовать .NET JSON?
+            byte[] data = connectionConfig.Encoding.GetBytes(JsonUtility.ToJson(message));
             dataStream.Write(data, 0, data.Length);
         }
 
