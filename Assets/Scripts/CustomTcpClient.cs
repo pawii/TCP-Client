@@ -28,7 +28,7 @@ namespace Scripts
 
         public void SendMessage(NetworkMessage message)
         {
-            byte[] data = connectionConfig.Encoding.GetBytes(JsonUtility.ToJson(message));
+            var data = connectionConfig.Encoding.GetBytes(JsonUtility.ToJson(message));
             dataStream.Write(data, 0, data.Length);
         }
 
